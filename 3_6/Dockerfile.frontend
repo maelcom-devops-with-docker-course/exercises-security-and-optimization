@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+WORKDIR /app
+
+ENV REACT_APP_BACKEND_URL=http://localhost:8080/
+COPY code/example-frontend/ .
+
+RUN useradd -m appuser && chown appuser . \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get purge -y --auto-remove curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm ci \
+    && npm run build \
+    && npm install -g serve \
+    && rm -rf src
+
+EXPOSE 5001
+USER appuser
+CMD ["serve", "-s", "-l", "5001", "build"]
