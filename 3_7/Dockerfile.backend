@@ -1,0 +1,11 @@
+FROM golang:1.16.15-alpine3.15
+WORKDIR /app
+
+# allow frontend CORS
+ENV REQUEST_ORIGIN=http://localhost:5001
+COPY code/example-backend/ .
+RUN adduser -D appuser && chown appuser . && go build && rm -rf cache
+
+EXPOSE 8080
+USER appuser
+CMD ["./server"]
