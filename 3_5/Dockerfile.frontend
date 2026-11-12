@@ -1,0 +1,14 @@
+FROM node:16.20.2-bookworm
+WORKDIR /app
+
+COPY code/example-frontend/ .
+RUN useradd -m appuser
+RUN chown appuser .
+
+RUN npm ci && npm install -g serve
+ENV REACT_APP_BACKEND_URL=http://localhost:8080/
+RUN npm run build
+
+EXPOSE 5001
+USER appuser
+CMD ["serve", "-s", "-l", "5001", "build"]
