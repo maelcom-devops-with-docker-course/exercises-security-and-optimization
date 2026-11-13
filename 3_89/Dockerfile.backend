@@ -1,0 +1,15 @@
+FROM golang:1.16.15-alpine3.15 AS builder
+WORKDIR /app
+COPY code/example-backend/ .
+RUN CGO_ENABLED=0 go build
+RUN adduser -D appuser
+
+FROM scratch AS runtime
+WORKDIR /app
+COPY --from=builder --chown=10001 ./app/server ./
+
+EXPOSE 8080
+USER 10001
+# allow frontend CORS
+ENV REQUEST_ORIGIN=http://localhost:5001
+CMD ["./server"]
