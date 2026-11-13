@@ -1,0 +1,18 @@
+FROM node:16.20.2-alpine3.18 AS builder
+WORKDIR /app
+COPY code/example-frontend/package*.json ./
+RUN npm ci
+COPY code/example-frontend/ .
+# this ENV var is needed during npm build
+ENV REACT_APP_BACKEND_URL=http://localhost:8080/
+RUN npm run build
+
+FROM node:16.20.2-alpine3.18 AS runtime
+WORKDIR /app
+RUN adduser -D appuser
+COPY --from=builder --chown=appuser ./app/build ./build
+RUN npm install -g serve
+
+EXPOSE 5001
+USER appuser
+CMD ["serve", "-s", "-l", "5001", "build"]
